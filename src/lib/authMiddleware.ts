@@ -2,19 +2,19 @@ import { Request } from "express";
 import { prisma } from "./prisma";
 
 const VerifyIsAthenticated = async ({ req }: { req: Request }) => {
-  const sessioId = req.cookies.sessionId;
+  const sessionId = req.cookies.sessionId;
 
-  if (!sessioId) {
+  if (!sessionId) {
     return null;
   }
 
-  const user = await prisma.session.findFirst({ where: { id: sessioId } });
+  const session = await prisma.session.findFirst({ where: { id: sessionId } });
 
-  if (!user) {
+  if (!session) {
     return null;
   }
 
-  return { user, sessioId };
+  return { session};
 };
 
 export { VerifyIsAthenticated };
