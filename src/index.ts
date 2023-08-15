@@ -19,7 +19,9 @@ app.post("/newUser", async (req, res) => {
   const userExist = await verifyUserExists({ email });
 
   if (userExist) {
-    return res.status(404).json("User already registered");
+    return res
+      .status(404)
+      .json("User already registered! Email have to be unique");
   }
 
   const user = await prisma.user.create({
@@ -64,7 +66,23 @@ app.post("/login", async (req, res) => {
     data: { userId: userExist.id },
   });
 
-  return res.cookie("auth", session.id).json(userExist);
+  return res.cookie("sessionId", session.id).json(userExist);
+});
+
+app.get("/me", async (req, res) => {
+  const isAuth = await VerifyIsAthenticated({ req });
+
+  if (!isAuth) {
+    return res.status(400).json("User not logged");
+  }
+
+  const user = await verifyUserExists({ id: isAuth.session.userId });
+
+  if (!user){
+    return res.status(400).json("User not found")
+  }
+
+  return res.status(200).json(user);
 });
 
 app.post("/logout", async (req, res) => {
@@ -74,7 +92,7 @@ app.post("/logout", async (req, res) => {
     return res.status(400).json("User not logged");
   }
 
-  await prisma.session.delete({ where: { id: isAuth.sessioId } });
+  await prisma.session.delete({ where: { id: isAuth.session.id } });
 
   return res.clearCookie("sessionId").status(200).json("Logout");
 });
