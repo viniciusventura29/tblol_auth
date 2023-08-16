@@ -2,7 +2,7 @@ import { Request } from "express";
 import { prisma } from "./prisma";
 
 const VerifyIsAthenticated = async ({ req }: { req: Request }) => {
-  const sessionId = req.cookies.sessionId;
+  const sessionId = req.cookies;
 
   if (!sessionId) {
     return null;
