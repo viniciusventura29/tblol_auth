@@ -1,6 +1,8 @@
 import { prisma } from "./prisma";
 
-const verifyUserExists = async (props: { email: string } | { id: string }) => {
+const verifyUserExists = async (
+  props: { email: string } | { id: string } | { nickname: string }
+) => {
   if ("id" in props) {
     const userExist = await prisma.user.findFirst({
       where: {
@@ -15,6 +17,16 @@ const verifyUserExists = async (props: { email: string } | { id: string }) => {
     const userExist = await prisma.user.findFirst({
       where: {
         email: props.email,
+      },
+    });
+
+    return userExist;
+  }
+
+  if ("nickname" in props) {
+    const userExist = await prisma.user.findFirst({
+      where: {
+        nickname: props.nickname,
       },
     });
 

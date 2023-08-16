@@ -14,18 +14,35 @@ app.get("/", (req, res) => {
 });
 
 app.post("/newUser", async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, nickname } = req.body;
 
-  const userExist = await verifyUserExists({ email });
+  const userExistByEmail = await verifyUserExists({ email });
 
-  if (userExist) {
+  if (userExistByEmail) {
     return res
       .status(404)
       .json("User already registered! Email have to be unique");
   }
 
+  const userExistByNickname = await verifyUserExists({ nickname });
+
+  if (userExistByNickname) {
+    return res
+      .status(404)
+      .json("Nickname already in use! Nickname have to be unique");
+  }
+
   const user = await prisma.user.create({
-    data: { email, name, password },
+    data: {
+      email,
+      name,
+      password,
+      adm: false,
+      coins: 0,
+      image: "",
+      level: 1,
+      nickname,
+    },
   });
 
   if (!user) {
@@ -78,8 +95,8 @@ app.get("/me", async (req, res) => {
 
   const user = await verifyUserExists({ id: isAuth.session.userId });
 
-  if (!user){
-    return res.status(400).json("User not found")
+  if (!user) {
+    return res.status(400).json("User not found");
   }
 
   return res.status(200).json(user);
