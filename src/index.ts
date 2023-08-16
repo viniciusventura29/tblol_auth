@@ -4,17 +4,17 @@ import { verifyUserExists } from "./lib/verifyUserExists";
 import cookieParser from "cookie-parser";
 import { VerifyIsAthenticated } from "./lib/authMiddleware";
 import cors, { CorsOptions } from "cors";
-const corsOptions: CorsOptions = {
-  origin: "*",
-  credentials: true,
-  allowedHeaders: "*",
-  methods: "*",
-};
 const port = 4000;
 const app = express();
-app.use(express.json());
 app.use(cookieParser());
-app.use(cors(corsOptions));
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
+app.use(express.json());
 
 app.get("/", (req, res) => {
   return res.json({ message: "Hello World!" });
@@ -65,7 +65,7 @@ app.get("/allUsers", async (req, res) => {
   return res.json(users);
 });
 
-app.post("/login", async (req, res) => {
+app.post("/login", async (req, res, next) => {
   const { email, password } = req.body;
 
   const userExist = await verifyUserExists({ email });
