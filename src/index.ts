@@ -85,7 +85,7 @@ app.post("/login", async (req, res) => {
     data: { userId: userExist.id },
   });
 
-  return res.cookie("sessionId", session.id).json(userExist);
+  return res.cookie("sessionId", session.id).json(userExist).send();
 });
 
 app.get("/me", async (req, res) => {
