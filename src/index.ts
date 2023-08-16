@@ -3,11 +3,13 @@ import { prisma } from "./lib/prisma";
 import { verifyUserExists } from "./lib/verifyUserExists";
 import cookieParser from "cookie-parser";
 import { VerifyIsAthenticated } from "./lib/authMiddleware";
+import cors from "cors";
 
 const port = 4000;
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors())
 
 app.get("/", (req, res) => {
   return res.json({ message: "Hello World!" });
