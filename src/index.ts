@@ -3,7 +3,8 @@ import { prisma } from "./lib/prisma";
 import { verifyUserExists } from "./lib/verifyUserExists";
 import cookieParser from "cookie-parser";
 import { VerifyIsAthenticated } from "./lib/authMiddleware";
-import cors, { CorsOptions } from "cors";
+import cors from "cors";
+import { z } from "zod";
 const port = 4000;
 const app = express();
 app.use(cookieParser());
@@ -21,9 +22,18 @@ app.get("/", (req, res) => {
 });
 
 app.post("/newUser", async (req, res) => {
-  const { name, email, password, nickname } = req.body;
+  const newUser = z.object({
+    name: z.string(),
+    email: z.string().email(),
+    password: z.string(),
+    nickname: z.string()
+  }).safeParse(req.body)
+  
+  if (!newUser.success){
+    return res.status(400).json(newUser.error);
+  }
 
-  const userExistByEmail = await verifyUserExists({ email });
+  const userExistByEmail = await verifyUserExists({email:newUser.data.email});
 
   if (userExistByEmail) {
     return res
@@ -31,7 +41,7 @@ app.post("/newUser", async (req, res) => {
       .json("User already registered! Email have to be unique");
   }
 
-  const userExistByNickname = await verifyUserExists({ nickname });
+  const userExistByNickname = await verifyUserExists({ nickname:newUser.data.nickname });
 
   if (userExistByNickname) {
     return res
@@ -41,14 +51,14 @@ app.post("/newUser", async (req, res) => {
 
   const user = await prisma.user.create({
     data: {
-      email,
-      name,
-      password,
+      email: newUser.data.email,
+      name: newUser.data.name,
+      password: newUser.data.password,
       adm: false,
       coins: 0,
       image: "",
       level: 1,
-      nickname,
+      nickname: newUser.data.nickname,
     },
   });
 
@@ -66,15 +76,22 @@ app.get("/allUsers", async (req, res) => {
 });
 
 app.post("/login", async (req, res, next) => {
-  const { email, password } = req.body;
+  const user = z.object({
+    email: z.string().email(),
+    password: z.string()
+  }).safeParse(req.body);
 
-  const userExist = await verifyUserExists({ email });
+  if (!user.success){
+    return res.status(400).json(user.error);
+  }
+
+  const userExist = await verifyUserExists({ email: user.data.email });
 
   if (!userExist) {
     return res.status(404).json("Email not registered");
   }
 
-  const userAuth = password === userExist.password;
+  const userAuth = user.data.password === userExist.password;
 
   if (!userAuth) {
     return res.status(403).json("Wrong Password");
