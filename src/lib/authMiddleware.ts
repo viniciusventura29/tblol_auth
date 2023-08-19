@@ -8,13 +8,14 @@ const VerifyIsAthenticated = async ({ req }: { req: Request }) => {
     return null;
   }
 
-  const session = await prisma.session?.findUnique({ where: { id: sessionId } });
+  const session = await prisma.session
+    .findFirst({ where: { userId: sessionId } }).catch(err=>{return null})
 
   if (!session) {
     return null;
   }
 
-  return { session};
+  return { session };
 };
 
 export { VerifyIsAthenticated };
