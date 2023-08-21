@@ -58,6 +58,7 @@ app.post("/newUser", async (req, res) => {
       coins: 0,
       image: "",
       level: 1,
+      playersId: "",
       nickname: newUser.data.nickname,
     },
   });
@@ -137,6 +138,27 @@ app.post("/logout", async (req, res) => {
 
   return res.clearCookie("sessionId").status(200).json("Logout");
 });
+
+app.post("/addPlayer", async (req, res)=>{
+  const user = z.object({
+    userId: z.string(),
+    playersId: z.string().array()
+  }).safeParse(req.body);
+
+  if(!user.success){
+    return res.status(400).send("User id not exists!")
+  }
+
+  const playersIdToupdate = user.data.playersId.join("")
+  
+  console.log(playersIdToupdate)
+
+  // prisma.user.update({
+  //   data:{
+  //     playersId: 
+  //   }
+  // })
+})
 
 app.listen(port, () =>
   console.log(`"Server is running in http://localhost:${port}"`)
