@@ -151,7 +151,9 @@ app.post("/logout", async (req, res) => {
 app.post("/addPlayer", async (req, res) => {
   const session = await VerifyIsAthenticated({ req });
 
-  console.log(session);
+  if (!session){
+    return res.status(404).json("You are not logged")
+  }
 
   const user = z
     .object({
@@ -166,6 +168,14 @@ app.post("/addPlayer", async (req, res) => {
   const oldUser = await prisma.user.findUnique({where:{id:session?.session.userId}})
 
   const playersId = oldUser?.playersId.split(",")
+
+  if (playersId !== undefined && playersId?.length >= 5){
+    return res.status(400).json("Your team is full")
+  }
+
+  if (playersId?.includes(user.data.playerid)){
+    return res.status(400).json("This player already is in your")
+  }
 
   playersId?.push(user.data.playerid)
 
