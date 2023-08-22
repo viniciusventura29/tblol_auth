@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import { VerifyIsAthenticated } from "./lib/authMiddleware";
 import cors from "cors";
 import { z } from "zod";
+import axios from "axios";
 const port = 4000;
 const app = express();
 app.use(cookieParser());
@@ -22,18 +23,22 @@ app.get("/", (req, res) => {
 });
 
 app.post("/newUser", async (req, res) => {
-  const newUser = z.object({
-    name: z.string(),
-    email: z.string().email(),
-    password: z.string(),
-    nickname: z.string()
-  }).safeParse(req.body)
-  
-  if (!newUser.success){
+  const newUser = z
+    .object({
+      name: z.string(),
+      email: z.string().email(),
+      password: z.string(),
+      nickname: z.string(),
+    })
+    .safeParse(req.body);
+
+  if (!newUser.success) {
     return res.status(400).json(newUser.error);
   }
 
-  const userExistByEmail = await verifyUserExists({email:newUser.data.email});
+  const userExistByEmail = await verifyUserExists({
+    email: newUser.data.email,
+  });
 
   if (userExistByEmail) {
     return res
@@ -41,7 +46,9 @@ app.post("/newUser", async (req, res) => {
       .json("User already registered! Email have to be unique");
   }
 
-  const userExistByNickname = await verifyUserExists({ nickname:newUser.data.nickname });
+  const userExistByNickname = await verifyUserExists({
+    nickname: newUser.data.nickname,
+  });
 
   if (userExistByNickname) {
     return res
@@ -77,12 +84,14 @@ app.get("/allUsers", async (req, res) => {
 });
 
 app.post("/login", async (req, res, next) => {
-  const user = z.object({
-    email: z.string().email(),
-    password: z.string()
-  }).safeParse(req.body);
+  const user = z
+    .object({
+      email: z.string().email(),
+      password: z.string(),
+    })
+    .safeParse(req.body);
 
-  if (!user.success){
+  if (!user.success) {
     return res.status(400).json(user.error);
   }
 
@@ -139,26 +148,41 @@ app.post("/logout", async (req, res) => {
   return res.clearCookie("sessionId").status(200).json("Logout");
 });
 
-app.post("/addPlayer", async (req, res)=>{
-  const user = z.object({
-    userId: z.string(),
-    playersId: z.string().array()
-  }).safeParse(req.body);
+app.post("/addPlayer", async (req, res) => {
+  const session = await VerifyIsAthenticated({ req });
 
-  if(!user.success){
-    return res.status(400).send("User id not exists!")
+  console.log(session);
+
+  const user = z
+    .object({
+      playerid: z.string(),
+    })
+    .safeParse(req.body);
+
+  if (!user.success) {
+    return res.status(400).send("User id not valid!");
   }
 
-  const playersIdToupdate = user.data.playersId.join("")
-  
-  console.log(playersIdToupdate)
+  const oldUser = await prisma.user.findUnique({where:{id:session?.session.userId}})
 
-  // prisma.user.update({
-  //   data:{
-  //     playersId: 
-  //   }
-  // })
-})
+  const playersId = oldUser?.playersId.split(",")
+
+  playersId?.push(user.data.playerid)
+
+  const userUpdated = await prisma.user.update({
+    data: {
+      playersId: playersId?.join(","),
+    },
+    where: {
+      id: session?.session.userId,
+    },
+  });
+
+  console.log((await userUpdated).playersId);
+
+  return res.status(200).json(userUpdated);
+});
+
 
 app.listen(port, () =>
   console.log(`"Server is running in http://localhost:${port}"`)
