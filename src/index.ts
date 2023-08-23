@@ -151,8 +151,8 @@ app.post("/logout", async (req, res) => {
 app.post("/addPlayer", async (req, res) => {
   const session = await VerifyIsAthenticated({ req });
 
-  if (!session){
-    return res.status(404).json("You are not logged")
+  if (!session) {
+    return res.status(404).json("You are not logged");
   }
 
   const user = z
@@ -165,19 +165,21 @@ app.post("/addPlayer", async (req, res) => {
     return res.status(400).send("User id not valid!");
   }
 
-  const oldUser = await prisma.user.findUnique({where:{id:session?.session.userId}})
+  const oldUser = await prisma.user.findUnique({
+    where: { id: session?.session.userId },
+  });
 
-  const playersId = oldUser?.playersId.split(",")
+  const playersId = oldUser?.playersId.split(",");
 
-  if (playersId !== undefined && playersId?.length >= 5){
-    return res.status(400).json("Your team is full")
+  if (playersId !== undefined && playersId?.length >= 5) {
+    return res.status(400).json("Your team is full");
   }
 
-  if (playersId?.includes(user.data.playerid)){
-    return res.status(400).json("This player already is in your")
+  if (playersId?.includes(user.data.playerid)) {
+    return res.status(400).json("This player already is in your");
   }
 
-  playersId?.push(user.data.playerid)
+  playersId?.push(user.data.playerid);
 
   const userUpdated = await prisma.user.update({
     data: {
@@ -193,6 +195,50 @@ app.post("/addPlayer", async (req, res) => {
   return res.status(200).json(userUpdated);
 });
 
+app.post("/removePlayer", async (req, res) => {
+  const session = await VerifyIsAthenticated({ req });
+
+  if (!session) {
+    return res.status(404).json("You are not logged");
+  }
+
+  const user = z
+    .object({
+      playerid: z.string(),
+    })
+    .safeParse(req.body);
+
+  if (!user.success) {
+    return res.status(400).send("User id not valid!");
+  }
+
+  const oldUser = await prisma.user.findUnique({
+    where: { id: session?.session.userId },
+  });
+
+  const playersId = oldUser?.playersId.split(",");
+
+  if (!playersId?.includes(user.data.playerid)){
+    return res.status(400).json("You don't own this player")
+  }
+
+  const newPlayersIds = playersId.filter((p)=>{p === user.data.playerid})
+
+  console.log(newPlayersIds)
+
+  const userUpdated = await prisma.user.update({
+    data: {
+      playersId: newPlayersIds?.join(","),
+    },
+    where: {
+      id: session?.session.userId,
+    },
+  });
+
+  console.log((await userUpdated).playersId);
+
+  return res.status(200).json(userUpdated);
+});
 
 app.listen(port, () =>
   console.log(`"Server is running in http://localhost:${port}"`)
