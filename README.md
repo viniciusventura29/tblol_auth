@@ -12,10 +12,10 @@ Follow below, all the endpoints that there is in this microservices.
 "*/newUser"
 
 Params:
-      name: string
-      email: string
-      password: string
-      nickname: string
+     - name: string
+     - email: string
+     - password: string
+     - nickname: string
 
 #### Get all users
 "*/allUsers"
@@ -24,8 +24,8 @@ Params:
 "*/login"
 
 Params:
-      email: string
-      password: string
+     - email: string
+     - password: string
 
 #### Get logged user informations
 "*/me"
@@ -37,4 +37,4 @@ Params:
 "*/addPlayer"
 
 Params:
-      playerId: string
+     - playerId: string
