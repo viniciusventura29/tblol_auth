@@ -12,36 +12,42 @@ Follow below, all the endpoints that there is in this microservices.
 "*/newUser"
 
 Params:
-     [X] name: string
-     [X] email: string
-     [X] password: string
-     [X] nickname: string
-     [X] adm: boolean
+- name: string
+- email: string
+- password: string
+- nickname: string
+- adm: boolean
+
 
 #### Get all users
 "*/allUsers"
 
+
 #### Login
 "*/login"
 
-Params:
-     [] email: string
-     [] password: string
+Params
+- email: string
+- password: string
+  
 
 #### Get logged user informations
 "*/me"
 
+
 #### logout
 "*/logout"
+
 
 #### to add a player in your team
 "*/addPlayer"
 
-Params:
-     [X] playerId: string
+Params
+- playerId: string
 
 #### To remove player from your team
 "*/removePlayer"
 
-Params:
-     [X] playerId: string
+Params
+- playerId: string
+
