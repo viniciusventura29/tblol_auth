@@ -25,8 +25,8 @@ Params:
 "*/login"
 
 Params:
-     [X] email: string
-     [X] password: string
+     [] email: string
+     [] password: string
 
 #### Get logged user informations
 "*/me"
