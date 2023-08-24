@@ -12,10 +12,11 @@ Follow below, all the endpoints that there is in this microservices.
 "*/newUser"
 
 Params:
-     - name: string
-     - email: string
-     - password: string
-     - nickname: string
+     [X] name: string
+     [X] email: string
+     [X] password: string
+     [X] nickname: string
+     [X] adm: boolean
 
 #### Get all users
 "*/allUsers"
@@ -24,8 +25,8 @@ Params:
 "*/login"
 
 Params:
-     - email: string
-     - password: string
+     [X] email: string
+     [X] password: string
 
 #### Get logged user informations
 "*/me"
@@ -37,4 +38,10 @@ Params:
 "*/addPlayer"
 
 Params:
-     - playerId: string
+     [X] playerId: string
+
+#### To remove player from your team
+"*/removePlayer"
+
+Params:
+     [X] playerId: string
