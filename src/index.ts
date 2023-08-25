@@ -1,4 +1,4 @@
-import express from "express";
+import express, { CookieOptions } from "express";
 import { prisma } from "./lib/prisma";
 import { verifyUserExists } from "./lib/verifyUserExists";
 import cookieParser from "cookie-parser";
@@ -16,6 +16,14 @@ app.use(
   })
 );
 app.use(express.json());
+
+const SESSION_COOKIE_OPTS: CookieOptions = {
+  httpOnly: true,
+  signed: false,
+  sameSite: "lax",
+  domain: "localhost",
+};
+const SESSION_COOKIE_MAX_AGE = 1000 * 60 * 60 * 24;
 
 app.get("/", (req, res) => {
   return res.json({ message: "Hello World!" });
@@ -117,7 +125,7 @@ app.post("/login", async (req, res, next) => {
     data: { userId: userExist.id },
   });
 
-  return res.json({user:userExist, cookies:session.id}).send();
+  return res.cookie("sessionId", session.id, {...SESSION_COOKIE_OPTS, maxAge:SESSION_COOKIE_MAX_AGE}).json(userExist).send();
 });
 
 app.get("/me", async (req, res) => {
