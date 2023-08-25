@@ -117,7 +117,7 @@ app.post("/login", async (req, res, next) => {
     data: { userId: userExist.id },
   });
 
-  return res.cookie("sessionId", session.id).json(userExist).send();
+  return res.cookie("sessionId", session.id,{path:"/", domain:"http://localhost:5173/"}).json(userExist).send();
 });
 
 app.get("/me", async (req, res) => {
