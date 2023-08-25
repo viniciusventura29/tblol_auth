@@ -5,7 +5,6 @@ import cookieParser from "cookie-parser";
 import { VerifyIsAthenticated } from "./lib/authMiddleware";
 import cors from "cors";
 import { z } from "zod";
-import axios from "axios";
 const port = 4000;
 const app = express();
 app.use(cookieParser());
@@ -29,6 +28,7 @@ app.post("/newUser", async (req, res) => {
       email: z.string().email(),
       password: z.string(),
       nickname: z.string(),
+      adm : z.boolean()
     })
     .safeParse(req.body);
 
@@ -61,7 +61,7 @@ app.post("/newUser", async (req, res) => {
       email: newUser.data.email,
       name: newUser.data.name,
       password: newUser.data.password,
-      adm: false,
+      adm: newUser.data.adm,
       coins: 0,
       image: "",
       level: 1,
@@ -239,6 +239,30 @@ app.post("/removePlayer", async (req, res) => {
 
   return res.status(200).json(userUpdated);
 });
+
+app.put("/editUser", async (req,res)=>{
+  const editUserResult= z.object({
+    name: z.string(),
+    password: z.string(),
+    nickname: z.string(),
+    image: z.string()
+  }).partial()
+  .refine(({ name, password, nickname, image }) => name || password || nickname || image , {
+    message: "You must provide at least one field",
+  })
+  .safeParse(req.body);
+
+  if (!editUserResult.success) {
+    return res.status(400).json({
+      message: "Body not formatted correctly",
+      error: editUserResult.error,
+    });
+  }
+
+  return res.status(200)
+})
+
+
 
 app.listen(port, () =>
   console.log(`"Server is running in http://localhost:${port}"`)
