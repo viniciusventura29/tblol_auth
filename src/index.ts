@@ -17,14 +17,6 @@ app.use(
 );
 app.use(express.json());
 
-const SESSION_COOKIE_OPTS: CookieOptions = {
-  httpOnly: true,
-  signed: false,
-  sameSite: "lax",
-  domain: "localhost",
-};
-const SESSION_COOKIE_MAX_AGE = 1000 * 60 * 60 * 24;
-
 app.get("/", (req, res) => {
   return res.json({ message: "Hello World!" });
 });
@@ -249,6 +241,14 @@ app.post("/removePlayer", async (req, res) => {
 });
 
 app.put("/editUser", async (req,res)=>{
+  const session = await VerifyIsAthenticated({req})
+
+  if (!session){
+    return res.status(400).json("user not logged")
+  }
+
+  const user = await verifyUserExists({id:session.session.id})
+
   const editUserResult= z.object({
     name: z.string(),
     password: z.string(),
@@ -267,7 +267,19 @@ app.put("/editUser", async (req,res)=>{
     });
   }
 
-  return res.status(200)
+  await prisma.user.update({
+    data:{
+      name:editUserResult.data.name || user?.name,
+      nickname:editUserResult.data.nickname || user?.nickname,
+      image:editUserResult.data.image || user?.image,
+      password:editUserResult.data.password || user?.password,
+    },
+    where:{
+      id:session.session.userId
+    }
+  })
+
+  return res.status(200).json("User successfully Edited!")
 })
 
 
